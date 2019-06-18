@@ -1,0 +1,59 @@
+package com.company;
+
+import java.awt.geom.Point2D;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+
+public class Ellipse {
+    public static void main(String[] args) {
+        double gamma = 4.0;
+        double x = 0.46 - gamma/2 + Math.sqrt(gamma * gamma / 4 - 0.47 * gamma + 0.2916);
+        double y = x + 0.01;
+        System.out.println("x: " + x + " y: " + y);
+        double a = 1 - 2 * x - 0.08 * gamma * y / ((x+0.08)*(x+0.08));
+        double b = - gamma * x / (x + 0.08);
+        double c = 0.2;
+        double d = - 0.2;
+        double denominator = 2 * (a + d) * (a * d - b * c);
+        double w1 = (-b*b - a * d + b * c - d * d) / denominator;
+        double w2 = (a * b + c * d) / denominator;
+        double w3 = (-c * c - a * a + b * c - a * d) / denominator;
+        System.out.println(w1);
+        System.out.println(w2);
+        System.out.println(w3);
+        double discr = (w1 + w3) * (w1 + w3) - 4 * (-w2*w2 + w1* w3);
+        double lambda1 = (w1 + w3 - Math.sqrt(discr)) / 2;
+        double lambda2 = (w1 + w3 + Math.sqrt(discr)) / 2;
+        System.out.println(lambda1 + " " + lambda2);
+        double v11 = w2 / (Math.sqrt(w2*w2 + Math.pow(lambda1-w1, 2)));
+        double v12 = (lambda1 - w1) / (Math.sqrt(w2*w2 + Math.pow(lambda1-w1, 2)));
+        double v21 = w2 / (Math.sqrt(w2*w2 + Math.pow(lambda2-w1, 2)));
+        double v22 = (lambda2 - w1) / (Math.sqrt(w2*w2 + Math.pow(lambda2-w1, 2)));
+        System.out.println(v11 + " " + v12);
+        System.out.println(v21+" " + v22);
+        double epsilon = 0.0001;
+        double q = Math.sqrt(-Math.log(1-0.95));
+        System.out.println("q =" + q);
+        System.out.println(v11*v22 - v12*v21);
+        ArrayList<Point2D.Double> result = new ArrayList<>();
+        for (int i = 0; i<=360; i++) {
+            double radians = Math.toRadians(i);
+            double z1 = epsilon*q*Math.sqrt(2*lambda1)*Math.cos(radians);
+            double z2 = epsilon*q*Math.sqrt(2*lambda2)*Math.sin(radians);
+            x = x + (z1*v22 - z2*v12)/(v11*v22 - v12*v21);
+            y = y + (z2 * v11 - z1 * v21) / (v11*v22 - v12*v21);
+            result.add(new Point2D.Double(x,y));
+        }
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("out.txt"));
+            for (Point2D.Double point : result) {
+                writer.write(point.x + " " + point.y + "\n\r");
+                writer.flush();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
